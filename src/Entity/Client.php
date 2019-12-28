@@ -29,6 +29,16 @@ class Client
      */
     private $user;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $create_at;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $email;
+
     public function __construct()
     {
         $this->user = new ArrayCollection();
@@ -78,6 +88,30 @@ class Client
                 $user->setName(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreateAt(): ?\DateTimeInterface
+    {
+        return $this->create_at;
+    }
+
+    public function setCreateAt(\DateTimeInterface $create_at): self
+    {
+        $this->create_at = $create_at;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
 
         return $this;
     }
