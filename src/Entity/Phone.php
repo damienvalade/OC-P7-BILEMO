@@ -3,10 +3,15 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PhoneRepository")
+ *
+ * @Serializer\ExclusionPolicy("all")
  */
+
 class Phone
 {
     /**
@@ -18,27 +23,40 @@ class Phone
 
     /**
      * @ORM\Column(type="string", length=255)
-     */
-    private $phone_name;
-
-    /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Users", mappedBy="phones")
+     * @Serializer\Expose()
+     * @Assert\NotBlank()
      */
     private $name;
 
     /**
      * @ORM\Column(type="text")
+     * @Serializer\Expose()
+     * @Assert\NotBlank()
      */
     private $description;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="string", length=255)
+     * @Serializer\Expose()
+     * @Assert\NotBlank()
      */
     private $price;
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
     }
 
     public function getDescription(): ?string
@@ -53,40 +71,15 @@ class Phone
         return $this;
     }
 
-    public function getName(): ?Users
-    {
-        return $this->name;
-    }
-
-    public function setName(?Users $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getPrice(): ?float
+    public function getPrice(): ?string
     {
         return $this->price;
     }
 
-    public function setPrice(float $price): self
+    public function setPrice(string $price): self
     {
         $this->price = $price;
 
         return $this;
     }
-
-    public function getPhoneName(): ?string
-    {
-        return $this->phone_name;
-    }
-
-    public function setPhoneName(string $phone_name): self
-    {
-        $this->phone_name = $phone_name;
-
-        return $this;
-    }
-
 }

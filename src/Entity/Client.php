@@ -1,119 +1,89 @@
 <?php
-
+/*
+ * This file is part of the FOSOAuthServerBundle package.
+ *
+ * (c) FriendsOfSymfony <http://friendsofsymfony.github.com/>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 namespace App\Entity;
-
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use FOS\OAuthServerBundle\Model\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
-
+use JMS\Serializer\Annotation as Serializer;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ClientRepository")
+ * @Serializer\ExclusionPolicy("all")
  */
-class Client
+class Client extends BaseClient
 {
     /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
+     * @ORM\Id
      * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
+     * @Serializer\Expose()
      */
-    private $id;
-
+    protected $id;
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string")
      */
-    private $name;
-
+    protected $randomId;
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\users", mappedBy="name")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string")
      */
-    private $user;
-
+    protected $secret;
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\Column(type="simple_array")
+     * @Serializer\Expose()
+     * @var array
      */
-    private $create_at;
-
+    protected $redirectUris = array();
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="simple_array")
+     * @var array
      */
-    private $email;
-
+    protected $allowedGrantTypes = array();
+    /**
+     * @ORM\Column(type="string")
+     * @Serializer\Expose()
+     * @var string
+     */
+    protected $name;
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\User", mappedBy="client", orphanRemoval=true)
+     */
+    private $users;
     public function __construct()
     {
-        $this->user = new ArrayCollection();
+        parent::__construct();
+        $this->users = new ArrayCollection();
     }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
     /**
-     * @return Collection|users[]
+     * @return Collection|User[]
      */
-    public function getUser(): Collection
+    public function getUsers(): Collection
     {
-        return $this->user;
+        return $this->users;
     }
-
-    public function addUser(users $user): self
+    public function addUser(User $user): self
     {
-        if (!$this->user->contains($user)) {
-            $this->user[] = $user;
-            $user->setName($this);
+        if (!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->setClient($this);
         }
-
         return $this;
     }
-
-    public function removeUser(users $user): self
+    public function removeUser(User $user): self
     {
-        if ($this->user->contains($user)) {
-            $this->user->removeElement($user);
+        if ($this->users->contains($user)) {
+            $this->users->removeElement($user);
             // set the owning side to null (unless already changed)
-            if ($user->getName() === $this) {
-                $user->setName(null);
+            if ($user->getClient() === $this) {
+                $user->setClient(null);
             }
         }
-
         return $this;
     }
-
-    public function getCreateAt(): ?\DateTimeInterface
-    {
-        return $this->create_at;
-    }
-
-    public function setCreateAt(\DateTimeInterface $create_at): self
-    {
-        $this->create_at = $create_at;
-
-        return $this;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
 }
