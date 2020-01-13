@@ -4,8 +4,8 @@ nelmio_api_doc:
         schemes: [http, https]
         info:
             title: API BileMo
-            description: BileMo is a webstore for phones multi-brand! And this is the API that will be use to connect our clients who wants to offer our product to their customers.
-            version: 1.0.0
+            description: This is tool for BileMo customers.
+            version: 0.3.0
         securityDefinitions:
             Bearer:
                 type: apiKey

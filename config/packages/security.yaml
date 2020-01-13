@@ -28,7 +28,7 @@ security:
       pattern:    ^/api
       fos_oauth:  true
       stateless:  true
-      anonymous:  true
+      anonymous:  false
       guard:
         authenticators:
           - App\Security\TokenAuthenticator

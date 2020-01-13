@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\AccessToken;
 use App\Entity\User;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
@@ -43,5 +44,37 @@ class UserRepository extends AbstractRepository implements PasswordUpgraderInter
         $user->setPassword($newEncodedPassword);
         $this->_em->persist($user);
         $this->_em->flush();
+    }
+
+    /**
+     * @param AccessToken $client
+     * @return int
+     */
+    public function getUserInfo(AccessToken $client)
+    {
+        $clientObject = $client->getClient();
+
+        return $this->createQueryBuilder('u')
+            ->select('u.username, u.usernameCanonical, u.email, u.enabled, u.roles, u.lastLogin')
+            ->where('u.client = :client')
+            ->setParameter('client', $clientObject)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
+    /**
+     * @param int $user
+     * @return int
+     */
+    public function getContractedUserInfo(int $user)
+    {
+        return $this->createQueryBuilder('u')
+            ->select('u.username, u.usernameCanonical, u.email, u.enabled, u.roles, u.lastLogin')
+            ->where('u.id = :id')
+            ->setParameter('id', $user)
+            ->getQuery()
+            ->getResult()
+            ;
     }
 }

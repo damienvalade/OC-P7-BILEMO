@@ -15,19 +15,21 @@ use Symfony\Component\HttpFoundation\Request;
 
 class PhoneController extends AbstractFOSRestController
 {
-
     /**
      * @var EntityManagerInterface
      */
     private $em;
+
     /**
      * @var PhoneRepository
      */
     private $repository;
+
     /**
      * @var SerializerInterface
      */
     private $serializer;
+
     /**
      * PhoneController constructor.
      * @param EntityManagerInterface $em
@@ -46,7 +48,8 @@ class PhoneController extends AbstractFOSRestController
      * @Rest\View()
      * @return object[]
      */
-    public function getListPhonesAction(){
+    public function getListPhonesAction()
+    {
         return $this->repository->findAll();
     }
 
@@ -56,8 +59,8 @@ class PhoneController extends AbstractFOSRestController
      * @param Phone $phone
      * @return Phone
      */
-    public function getOnePhoneAction(Phone $phone){
+    public function getOnePhoneAction(Phone $phone)
+    {
         return $phone;
     }
-
 }
