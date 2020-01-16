@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Doctrine\ORM\QueryBuilder;
 use Pagerfanta\Pagerfanta;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -48,18 +49,38 @@ class UserRepository extends AbstractRepository implements PasswordUpgraderInter
 
     /**
      * @param AccessToken $client
-     * @return int
+     * @param string $order
+     * @param int $limit
+     * @param int $offset
+     * @return Pagerfanta | bool
      */
-    public function getUserInfo(AccessToken $client)
+    public function search(AccessToken $client, $order = 'asc', $limit = 20, $offset = 0)
+    {
+
+        $qb = $this->getUserInfo($client, $order);
+
+        $paginate = $this->paginate($qb, $limit, $offset);
+
+        if(empty($paginate->getNbResults())){
+            return false;
+        }
+        return $this->paginate($qb, $limit, $offset);
+    }
+
+    /**
+     * @param AccessToken $client
+     * @param string $order
+     * @return QueryBuilder
+     */
+    public function getUserInfo(AccessToken $client, string $order)
     {
         $clientObject = $client->getClient();
 
         return $this->createQueryBuilder('u')
-            ->select('u.username, u.usernameCanonical, u.email, u.enabled, u.roles, u.lastLogin')
+            ->select('u')
+            ->orderBy('u.username', $order)
             ->where('u.client = :client')
             ->setParameter('client', $clientObject)
-            ->getQuery()
-            ->getResult()
             ;
     }
 
