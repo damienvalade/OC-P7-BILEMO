@@ -3,20 +3,26 @@
 namespace App\Controller;
 
 use App\Entity\AccessToken;
+use App\Entity\Client;
 use App\Entity\User;
 use App\Repository\AccessTokenRepository;
+use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
 use App\Representation\Users;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Request\ParamFetcherInterface;
+use JMS\Serializer\Serializer;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use FOS\RestBundle\View\View;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+
 
 class UserController extends AbstractFOSRestController
 {
@@ -38,20 +44,32 @@ class UserController extends AbstractFOSRestController
      * @var AccessTokenRepository
      */
     private $tokenRepository;
+    /**
+     * @var UserPasswordEncoderInterface
+     */
+    private $encoder;
 
     /**
-     * PhoneController constructor.
+     * UserController constructor.
      * @param EntityManagerInterface $em
      * @param UserRepository $repository
      * @param AccessTokenRepository $tokenRepository
      * @param SerializerInterface $serializer
+     * @param UserPasswordEncoderInterface $encoder
      */
-    public function __construct(EntityManagerInterface $em, UserRepository $repository, AccessTokenRepository $tokenRepository, SerializerInterface $serializer)
+    public function __construct(
+        EntityManagerInterface $em,
+        UserRepository $repository,
+        AccessTokenRepository $tokenRepository,
+        SerializerInterface $serializer,
+        UserPasswordEncoderInterface $encoder
+    )
     {
         $this->em = $em;
         $this->repository = $repository;
         $this->serializer = $serializer;
         $this->tokenRepository = $tokenRepository;
+        $this->encoder = $encoder;
     }
 
     /**
@@ -91,8 +109,8 @@ class UserController extends AbstractFOSRestController
     {
         $client = $this->getClientAction($request, $token);
 
-        if($client === null){
-            throw new HttpException(Response::HTTP_FORBIDDEN,'You are not allowed for this request');
+        if ($client === null) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
         }
 
         $pager = $this->repository->search(
@@ -102,7 +120,7 @@ class UserController extends AbstractFOSRestController
             $paramFetcher->get('offset')
         );
 
-        if($pager === false){
+        if ($pager === false) {
             throw new HttpException(204, 'No user found');
         }
 
@@ -122,8 +140,8 @@ class UserController extends AbstractFOSRestController
     {
         $client = $this->getClientAction($request, $token);
 
-        if($client === null || $user->getClient() !== $client->getClient()){
-            throw new HttpException(Response::HTTP_FORBIDDEN,'You are not allowed for this request');
+        if ($client === null || $user->getClient() !== $client->getClient()) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
         }
 
         return $this->repository->getContractedUserInfo($user->getId());
@@ -137,5 +155,49 @@ class UserController extends AbstractFOSRestController
     public function getClientAction(Request $request, AccessTokenRepository $client)
     {
         return $client = $client->getClientByToken($request->headers->get('X-AUTH-TOKEN'));
+    }
+
+    /**
+     * @Rest\Post("/add/user", name="add_user")
+     * @Rest\View(StatusCode = 201)
+     * @ParamConverter("user", converter="fos_rest.request_body")
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return User
+     */
+    public function addUser(User $user, Request $request, AccessTokenRepository $token)
+    {
+
+        $client = $this->getClientAction($request, $token);
+
+        $em = $this->getDoctrine()->getManager();
+
+        $user->setClient($client->getClient());
+        $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+
+        $em->persist($user);
+        $em->flush();
+
+        return $user;
+    }
+
+    /**
+     * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
+     * @Rest\View()
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return array
+     */
+    public function deleteUser(User $user, Request $request, AccessTokenRepository $token)
+    {
+
+        $em = $this->getDoctrine()->getManager();
+
+        $em->remove($user);
+        $em->flush();
+
+        return ["sucess" => "ok"];
     }
 }
