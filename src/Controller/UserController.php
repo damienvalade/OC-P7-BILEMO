@@ -212,16 +212,9 @@ class UserController extends AbstractFOSRestController
      */
     public function userIsMatch($client, $user)
     {
-        if ($user === false) {
-            $user = $client->getClient();
-        } else {
-            $user = $user->getClient();
-        }
-
-        if ($user === $client->getClient()) {
+        if ($user === false || $user->getClient() === $client->getClient()) {
             return true;
         }
-
         return false;
     }
 
@@ -232,12 +225,9 @@ class UserController extends AbstractFOSRestController
      */
     public function isAllowed(Request $request, array $data)
     {
-        $token = $data['token'];
-        $user = $data['user'];
 
-        $client = $this->getClientAction($request, $token);
-
-        $isMatch = $this->userIsMatch($client, $user);
+        $client = $this->getClientAction($request, $data['token']);
+        $isMatch = $this->userIsMatch($client, $data['user']);
 
         if ($client === null || $isMatch === false) {
             throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
