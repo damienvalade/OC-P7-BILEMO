@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 class ExceptionListener
 {
     private $logger;
+
     public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
@@ -18,30 +19,47 @@ class ExceptionListener
 
     public function onKernelException(ExceptionEvent $event)
     {
-
-        // You get the exception object from the received event
         $exception = $event->getThrowable();
-        if(!$exception->getCode() && $exception instanceof HttpExceptionInterface){
-            $code = $exception->getStatusCode();
-        }elseif(!$exception->getCode()) {
-            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
-        }else{
-            $code = $exception->getCode();
-        }
+        $code = $this->getCodeError($exception);
 
         $message = sprintf(
             "My Error says: \"%s\" with code: %s",
             $exception->getMessage(),
             $code
         );
-        //log error
+
         $this->logger->error($message);
-        // Customize your response object to display the exception details
+        $response = $this->getResponse($message, $exception);
+        $event->setResponse($response);
+    }
+
+    /**
+     * @param \Throwable $exception
+     * @return int
+     */
+    public function getCodeError(\Throwable $exception)
+    {
+        if (!$exception->getCode() && $exception instanceof HttpExceptionInterface) {
+            $code = $exception->getStatusCode();
+        } elseif (!$exception->getCode()) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+        } else {
+            $code = $exception->getCode();
+        }
+
+        return $code;
+    }
+
+    /**
+     * @param string $message
+     * @param \Throwable $exception
+     * @return Response
+     */
+    public function getResponse(string $message, \Throwable $exception)
+    {
         $response = new Response();
         $response->setContent($message);
 
-        // HttpExceptionInterface is a special type of exception that
-        // holds status code and header details
         if ($exception instanceof HttpExceptionInterface) {
             $response->setStatusCode($exception->getStatusCode());
             $response->headers->replace($exception->getHeaders());
@@ -49,7 +67,6 @@ class ExceptionListener
             $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        // sends the modified response object to the event
-        $event->setResponse($response);
+        return $response;
     }
 }
