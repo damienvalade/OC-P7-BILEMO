@@ -29,7 +29,7 @@ class UserController extends AbstractFOSRestController
     /**
      * @var EntityManagerInterface
      */
-    private $em;
+    private $entityManager;
 
     /**
      * @var UserRepository
@@ -51,21 +51,21 @@ class UserController extends AbstractFOSRestController
 
     /**
      * UserController constructor.
-     * @param EntityManagerInterface $em
+     * @param EntityManagerInterface $entityManager
      * @param UserRepository $repository
      * @param AccessTokenRepository $tokenRepository
      * @param SerializerInterface $serializer
      * @param UserPasswordEncoderInterface $encoder
      */
     public function __construct(
-        EntityManagerInterface $em,
+        EntityManagerInterface $entityManager,
         UserRepository $repository,
         AccessTokenRepository $tokenRepository,
         SerializerInterface $serializer,
         UserPasswordEncoderInterface $encoder
     )
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->repository = $repository;
         $this->serializer = $serializer;
         $this->tokenRepository = $tokenRepository;
@@ -107,11 +107,10 @@ class UserController extends AbstractFOSRestController
      */
     public function getListUsersAction(Request $request, AccessTokenRepository $token, ParamFetcherInterface $paramFetcher)
     {
-        $client = $this->getClientAction($request, $token);
-
-        if ($client === null) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
-        }
+        $client = $this->isAllowed($request, [
+            'token' => $token,
+            'user' => false
+        ]);
 
         $pager = $this->repository->search(
             $client,
@@ -121,7 +120,7 @@ class UserController extends AbstractFOSRestController
         );
 
         if ($pager === false) {
-            throw new HttpException(204, 'No user found');
+            throw new HttpException(404, 'No user found');
         }
 
         return new Users($pager);
@@ -136,15 +135,64 @@ class UserController extends AbstractFOSRestController
      * @return int
      * @throws HttpException
      */
-    public function getOneUserAction(User $user, Request $request, AccessTokenRepository $token)
+    public function getOneUserAction(Request $request, User $user, AccessTokenRepository $token)
     {
-        $client = $this->getClientAction($request, $token);
-
-        if ($client === null || $user->getClient() !== $client->getClient()) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
-        }
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
 
         return $this->repository->getContractedUserInfo($user->getId());
+    }
+
+    /**
+     * @Rest\Post("/add/user", name="add_user")
+     * @Rest\View(StatusCode = 201)
+     * @ParamConverter("user", converter="fos_rest.request_body")
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return User
+     */
+    public function addUser(Request $request, User $user, AccessTokenRepository $token)
+    {
+
+        $client = $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user->setClient($client->getClient());
+        $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
+    }
+
+    /**
+     * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
+     * @Rest\View(StatusCode = 201)
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return void
+     */
+    public function deleteUser(Request $request, User $user, AccessTokenRepository $token)
+    {
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($user);
+        $entityManager->flush();
+
+        return;
     }
 
     /**
@@ -158,46 +206,44 @@ class UserController extends AbstractFOSRestController
     }
 
     /**
-     * @Rest\Post("/add/user", name="add_user")
-     * @Rest\View(StatusCode = 201)
-     * @ParamConverter("user", converter="fos_rest.request_body")
-     * @param User $user
-     * @param Request $request
-     * @param AccessTokenRepository $token
-     * @return User
+     * @param $client
+     * @param $user
+     * @return string
      */
-    public function addUser(User $user, Request $request, AccessTokenRepository $token)
+    public function userIsMatch($client, $user)
     {
+        if ($user === false) {
+            $user = $client->getClient();
+        } else {
+            $user = $user->getClient();
+        }
 
-        $client = $this->getClientAction($request, $token);
+        if ($user === $client->getClient()) {
+            return true;
+        }
 
-        $em = $this->getDoctrine()->getManager();
-
-        $user->setClient($client->getClient());
-        $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
-
-        $em->persist($user);
-        $em->flush();
-
-        return $user;
+        return false;
     }
 
     /**
-     * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
-     * @Rest\View()
-     * @param User $user
      * @param Request $request
-     * @param AccessTokenRepository $token
-     * @return array
+     * @param array $data
+     * @return AccessToken|null
      */
-    public function deleteUser(User $user, Request $request, AccessTokenRepository $token)
+    public function isAllowed(Request $request, array $data)
     {
+        $token = $data['token'];
+        $user = $data['user'];
 
-        $em = $this->getDoctrine()->getManager();
+        $client = $this->getClientAction($request, $token);
 
-        $em->remove($user);
-        $em->flush();
+        $isMatch = $this->userIsMatch($client, $user);
 
-        return ["sucess" => "ok"];
+        if ($client === null || $isMatch === false) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
+        }
+
+        return $client;
     }
+
 }

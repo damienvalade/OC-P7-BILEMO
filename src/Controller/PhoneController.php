@@ -86,7 +86,7 @@ class PhoneController extends AbstractFOSRestController
         );
 
         if($pager === false){
-            throw new HttpException(204, 'No phone found');
+            throw new HttpException(404, 'No phone found');
         }
         return new Phones($pager);
     }
