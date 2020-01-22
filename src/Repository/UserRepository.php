@@ -50,6 +50,23 @@ class UserRepository extends AbstractRepository implements PasswordUpgraderInter
     /**
      * @param AccessToken $client
      * @param string $order
+     * @return QueryBuilder
+     */
+    public function getUserInfo(AccessToken $client, string $order)
+    {
+        $clientObject = $client->getClient();
+
+        return $this->createQueryBuilder('u')
+            ->select('u')
+            ->orderBy('u.username', $order)
+            ->where('u.client = :client')
+            ->setParameter('client', $clientObject)
+            ;
+    }
+
+   /**
+     * @param AccessToken $client
+     * @param string $order
      * @param int $limit
      * @param int $offset
      * @return Pagerfanta | bool
@@ -65,23 +82,6 @@ class UserRepository extends AbstractRepository implements PasswordUpgraderInter
             return false;
         }
         return $this->paginate($qb, $limit, $offset);
-    }
-
-    /**
-     * @param AccessToken $client
-     * @param string $order
-     * @return QueryBuilder
-     */
-    public function getUserInfo(AccessToken $client, string $order)
-    {
-        $clientObject = $client->getClient();
-
-        return $this->createQueryBuilder('u')
-            ->select('u')
-            ->orderBy('u.username', $order)
-            ->where('u.client = :client')
-            ->setParameter('client', $clientObject)
-            ;
     }
 
     /**
