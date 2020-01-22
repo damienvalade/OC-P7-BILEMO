@@ -22,28 +22,17 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
 
 
 class UserController extends AbstractFOSRestController
 {
     /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
      * @var UserRepository
      */
     private $repository;
-
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-    /**
-     * @var AccessTokenRepository
-     */
-    private $tokenRepository;
     /**
      * @var UserPasswordEncoderInterface
      */
@@ -51,28 +40,20 @@ class UserController extends AbstractFOSRestController
 
     /**
      * UserController constructor.
-     * @param EntityManagerInterface $entityManager
      * @param UserRepository $repository
-     * @param AccessTokenRepository $tokenRepository
-     * @param SerializerInterface $serializer
      * @param UserPasswordEncoderInterface $encoder
      */
     public function __construct(
-        EntityManagerInterface $entityManager,
         UserRepository $repository,
-        AccessTokenRepository $tokenRepository,
-        SerializerInterface $serializer,
         UserPasswordEncoderInterface $encoder
     )
     {
-        $this->entityManager = $entityManager;
         $this->repository = $repository;
-        $this->serializer = $serializer;
-        $this->tokenRepository = $tokenRepository;
         $this->encoder = $encoder;
     }
 
     /**
+     * List Users
      * @Rest\Get("/list/user", name="list_user")
      * @Rest\QueryParam(
      *     name="keyword",
@@ -100,6 +81,17 @@ class UserController extends AbstractFOSRestController
      *     description="The pagination offset"
      * )
      * @Rest\View()
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns list of all users",
+     *     @Model(type=User::class)
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="User")
+     * @Security(name="Bearer")
      * @param Request $request
      * @param AccessTokenRepository $token
      * @param ParamFetcherInterface $paramFetcher
@@ -127,8 +119,44 @@ class UserController extends AbstractFOSRestController
     }
 
     /**
+     * Detail User
      * @Rest\Get("/detail/user/{id}", name="one_user", requirements={"id"="\d+"})
      * @Rest\View()
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns detail of an user",
+     *     @SWG\Schema(
+     *          @SWG\Property(
+     *              property="username",
+     *              type="string"
+     *          ),
+     *          @SWG\Property(
+     *              property="email",
+     *              type="string"
+     *          ),
+     *          @SWG\Property(
+     *              property="enabled",
+     *              type="boolean"
+     *          ),
+     *          @SWG\Property(
+     *              property="roles",
+     *              type="array",
+     *              @SWG\Items(
+     *                 type="object"
+     *              )
+     *          ),
+     *          @SWG\Property(
+     *              property="lastLogin",
+     *              type="string"
+     *          )
+     *     )
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="User")
+     * @Security(name="Bearer")
      * @param User $user
      * @param Request $request
      * @param AccessTokenRepository $token
@@ -146,9 +174,21 @@ class UserController extends AbstractFOSRestController
     }
 
     /**
+     * Add User
      * @Rest\Post("/add/user", name="add_user")
      * @Rest\View(StatusCode = 201)
      * @ParamConverter("user", converter="fos_rest.request_body")
+     * @SWG\Response(
+     *     response=201,
+     *     description="Add new User",
+     *     @Model(type=User::class)
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
      * @param User $user
      * @param Request $request
      * @param AccessTokenRepository $token
@@ -174,8 +214,19 @@ class UserController extends AbstractFOSRestController
     }
 
     /**
+     * Delete User
      * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
      * @Rest\View(StatusCode = 201)
+     * @SWG\Response(
+     *     response=201,
+     *     description="Delete User"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
      * @param User $user
      * @param Request $request
      * @param AccessTokenRepository $token
