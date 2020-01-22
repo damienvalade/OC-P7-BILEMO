@@ -4,8 +4,8 @@ nelmio_api_doc:
         schemes: [http, https]
         info:
             title: API BileMo
-            description: This is tool for BileMo customers.
-            version: 0.3.0
+            description: Api for of Bilemo inc clients. List/detail of phones and users. Can manage Users to. Implements the client manager for administrators.
+            version: 0.7.0
         securityDefinitions:
             Bearer:
                 type: apiKey

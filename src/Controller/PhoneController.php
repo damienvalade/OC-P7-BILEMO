@@ -12,41 +12,33 @@ use FOS\RestBundle\Request\ParamFetcherInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use FOS\RestBundle\View\View;
 use JMS\Serializer\SerializerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Swagger\Annotations as SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+
 
 class PhoneController extends AbstractFOSRestController
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $em;
-
     /**
      * @var PhoneRepository
      */
     private $repository;
 
     /**
-     * @var SerializerInterface
-     */
-    private $serializer;
-
-    /**
      * PhoneController constructor.
-     * @param EntityManagerInterface $em
      * @param PhoneRepository $repository
-     * @param SerializerInterface $serializer
      */
-    public function __construct(EntityManagerInterface $em, PhoneRepository $repository, SerializerInterface $serializer)
+    public function __construct(PhoneRepository $repository)
     {
-        $this->em = $em;
         $this->repository = $repository;
-        $this->serializer = $serializer;
     }
 
     /**
+     * List phones
      * @Rest\Get("/list/phone", name="list_phones")
      * * @Rest\QueryParam(
      *     name="keyword",
@@ -73,6 +65,13 @@ class PhoneController extends AbstractFOSRestController
      *     description="The pagination offset"
      * )
      * @Rest\View()
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns list of  all phones",
+     *     @Model(type=Phone::class)
+     * )
+     * @SWG\Tag(name="Phone")
+     * @Security(name="Bearer")
      * @param ParamFetcherInterface $paramFetcher
      * @return Phones | View
      */
@@ -85,20 +84,81 @@ class PhoneController extends AbstractFOSRestController
             $paramFetcher->get('offset')
         );
 
-        if($pager === false){
+        if ($pager === false) {
             throw new HttpException(404, 'No phone found');
         }
         return new Phones($pager);
     }
 
     /**
+     * Detail Phone
      * @Rest\Get("/detail/phone/{id}", name="one_phone", requirements={"id"="\d+"})
      * @Rest\View()
+     * @SWG\Response(
+     *     response=200,
+     *     description="Returns detail of one phone",
+     *     @Model(type=Phone::class)
+     * )
+     * @SWG\Tag(name="Phone")
+     * @Security(name="Bearer")
      * @param Phone $phone
      * @return Phone
      */
     public function getOnePhoneAction(Phone $phone)
     {
         return $phone;
+    }
+
+    /**
+     * Add Phone
+     * @Rest\Post("/add/phone", name="add_phone")
+     * @ParamConverter("phone", converter="fos_rest.request_body")
+     * @Rest\View()
+     * @SWG\Response(
+     *     response=201,
+     *     description="add Phone"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/Phone")
+     * @Security(name="Bearer")
+     * @param Phone $phone
+     * @return Phone
+     */
+    public function addPhoneAction(Phone $phone)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($phone);
+        $entityManager->flush();
+
+        return $phone;
+    }
+
+    /**
+     * Delete Phone
+     * @Rest\Delete("/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
+     * @Rest\View(StatusCode = 201)
+     * @SWG\Response(
+     *     response=201,
+     *     description="Delete Phone"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/Phone")
+     * @Security(name="Bearer")
+     * @param Phone $phone
+     * @return void
+     */
+    public function deletePhoneAction(Phone $phone)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($phone);
+        $entityManager->flush();
+
+        return;
     }
 }
