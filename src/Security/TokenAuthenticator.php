@@ -19,13 +19,24 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
-    private $em;
+    /*
+     * @var EntityManagerInterface $em
+     */
+    private $entityManager;
 
+    /*
+     * @var AccessTokenRepository $repository
+     */
     private $repository;
 
-    public function __construct(EntityManagerInterface $em, AccessTokenRepository $repository)
+    /**
+     * TokenAuthenticator constructor.
+     * @param EntityManagerInterface $entityManager
+     * @param AccessTokenRepository $repository
+     */
+    public function __construct(EntityManagerInterface $entityManager, AccessTokenRepository $repository)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
         $this->repository = $repository;
     }
 
@@ -75,16 +86,16 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             return;
         }
 
-        if(null === $this->em->getRepository(AccessToken::class)->findOneBy(['token' => $token])){
+        if(null === $this->entityManager->getRepository(AccessToken::class)->findOneBy(['token' => $token])){
             throw new HttpException(Response::HTTP_BAD_REQUEST,'Credential token is not valid');
         }
 
-        if($this->em->getRepository(AccessToken::class)
+        if($this->entityManager->getRepository(AccessToken::class)
             ->findOneBy(['token' => $token])->getExpiresAt() <= time()){
             throw new HttpException(Response::HTTP_FORBIDDEN, 'Token Expired, please login again');
         }
 
-        return $this->em->getRepository(AccessToken::class)
+        return $this->entityManager->getRepository(AccessToken::class)
             ->findOneBy(['token' => $token])->getUser();
     }
 
