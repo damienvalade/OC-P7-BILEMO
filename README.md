@@ -21,31 +21,31 @@ Il s'agit de fournir à toutes les plateformes qui le souhaitent l’accès au c
     
 Après une réunion dense avec le client, il a été identifié un certain nombre d’informations. Il doit être possible de :  
   
-- consulter la liste des produits BileMo.
-- consulter les détails d’un produit BileMo.
-- consulter la liste des utilisateurs inscrits liés à un client sur le site web.
-- consulter le détail d’un utilisateur inscrit lié à un client.
-- ajouter un nouvel utilisateur lié à un client.
-- supprimer un utilisateur ajouté par un client.
+  - consulter la liste des produits BileMo.
+  - consulter les détails d’un produit BileMo.
+  - consulter la liste des utilisateurs inscrits liés à un client sur le site web.
+  - consulter le détail d’un utilisateur inscrit lié à un client.
+  - ajouter un nouvel utilisateur lié à un client.
+  - supprimer un utilisateur ajouté par un client.
 
 Seuls les clients référencés peuvent accéder aux API. Les clients de l’API doivent être authentifiés via OAuth ou JWT.  
   
 ## Installation ##
   
-1. Clonez le repo :
+ 1. Clonez le repo :
 
-> git clone https://github.com/damienvalade/OC-P7-BILEMO.git
+``` git clone https://github.com/damienvalade/OC-P7-BILEMO.git ```
 
-2. Modifier le .env avec vos informations.
+ 2. Modifier le .env avec vos informations.
    
-3. Installez les dependances :
+ 3. Installez les dependances :
 
-> composer install npm install
+``` composer install npm install ```
 
-4. Mettre en place la BDD :
+ 4. Mettre en place la BDD :
 
-> php bin/console doctrine:database:create php bin/console doctrine:migrations:migrate
+``` php bin/console doctrine:database:create php bin/console doctrine:migrations:migrate ```
 
 ## Documentation ##
   
-[![Generic badge](https://img.shields.io/badge/Documentation-v0.7.4-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
+[![Generic badge](https://img.shields.io/badge/Documentation-v0.7.5-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
