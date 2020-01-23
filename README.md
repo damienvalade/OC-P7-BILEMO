@@ -1,14 +1,13 @@
-
-# Blog OpenClassrooms  
+# Blog OpenClassrooms #  
   
 Projet OpenClassrooms : API pour l'entreprise BileMo 
   
-## Informations du projet   
+## Informations du projet ## 
 Projet de la formation ***Développeur d'application - PHP / Symfony***.  
   
 **Créez un web service exposant une API** - [Lien de la formation](https://openclassrooms.com/fr/paths/59-developpeur-dapplication-php-symfony)  
   
-## Badges du projet  
+## Badges du projet ##
   
 [![Maintainability](https://api.codeclimate.com/v1/badges/d5049f075a6e11110166/maintainability)](https://codeclimate.com/github/damienvalade/OC-P7-BILEMO/maintainability)  
 
@@ -16,39 +15,37 @@ Projet de la formation ***Développeur d'application - PHP / Symfony***.
 
 [![Dependabot](https://badgen.net/badge/Dependabot/enabled/green?icon=dependabot)](https://dependabot.com/)  
   
-## Descriptif du besoin   
+## Descriptif du besoin ##
+
 Il s'agit de fournir à toutes les plateformes qui le souhaitent l’accès au catalogue de mobile via une API (Application Programming Interface).  
+    
+Après une réunion dense avec le client, il a été identifié un certain nombre d’informations. Il doit être possible de :  
   
-  
- Après une réunion dense avec le client, il a été identifié un certain nombre d’informations. Il doit être possible de :  
-  
- - consulter la liste des produits BileMo
- - consulter les détails d’un produit BileMo
- - consulter la liste des utilisateurs inscrits liés à un client sur le site web
- - consulter le détail d’un utilisateur inscrit lié à un client
- - ajouter un nouvel utilisateur lié à un client
- - supprimer un utilisateur ajouté par un client
+  - consulter la liste des produits BileMo.
+  - consulter les détails d’un produit BileMo.
+  - consulter la liste des utilisateurs inscrits liés à un client sur le site web.
+  - consulter le détail d’un utilisateur inscrit lié à un client.
+  - ajouter un nouvel utilisateur lié à un client.
+  - supprimer un utilisateur ajouté par un client.
 
 Seuls les clients référencés peuvent accéder aux API. Les clients de l’API doivent être authentifiés via OAuth ou JWT.  
   
-## Installation  
+## Installation ##
   
-1. Clonez le repo :  
+ 1. Clonez le repo :  
 
 > git clone https://github.com/damienvalade/OC-P7-BILEMO.git 
 
-3. Modifier le .env avec vos informations.  
+ 3. Modifier le .env avec vos informations.  
    
-4. Installez les dependances :  
+ 4. Installez les dependances :  
 
 > composer install npm install 
 
-6. Mettre en place la BDD :  
+ 6. Mettre en place la BDD :  
 
 > php bin/console doctrine:database:create php bin/console doctrine:migrations:migrate
 
+## Documentation ##
   
-
-## Documentation  
-  
-[![Generic badge](https://img.shields.io/badge/Documentation-v0.7.2-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
+[![Generic badge](https://img.shields.io/badge/Documentation-v0.7.3-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
