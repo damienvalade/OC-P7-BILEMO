@@ -1,5 +1,7 @@
 # Blog OpenClassrooms #
   
+![alt text](https://portfolio.damienvalade.fr/img/projects/Bilemo.jpg)
+  
 Projet OpenClassrooms : API pour l'entreprise BileMo 
   
 ## Informations du projet ##
