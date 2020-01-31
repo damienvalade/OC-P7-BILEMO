@@ -125,31 +125,7 @@ class UserController extends AbstractFOSRestController
      * @SWG\Response(
      *     response=200,
      *     description="Returns detail of an user",
-     *     @SWG\Schema(
-     *          @SWG\Property(
-     *              property="username",
-     *              type="string"
-     *          ),
-     *          @SWG\Property(
-     *              property="email",
-     *              type="string"
-     *          ),
-     *          @SWG\Property(
-     *              property="enabled",
-     *              type="boolean"
-     *          ),
-     *          @SWG\Property(
-     *              property="roles",
-     *              type="array",
-     *              @SWG\Items(
-     *                 type="object"
-     *              )
-     *          ),
-     *          @SWG\Property(
-     *              property="lastLogin",
-     *              type="string"
-     *          )
-     *     )
+     *     @Model(type=User::class)
      * )
      * @SWG\Response(
      *     response=403,
@@ -160,7 +136,7 @@ class UserController extends AbstractFOSRestController
      * @param User $user
      * @param Request $request
      * @param AccessTokenRepository $token
-     * @return int
+     * @return User
      * @throws HttpException
      */
     public function getOneUserAction(Request $request, User $user, AccessTokenRepository $token)
@@ -170,7 +146,7 @@ class UserController extends AbstractFOSRestController
             'user' => $user
         ]);
 
-        return $this->repository->getContractedUserInfo($user->getId());
+        return $user;
     }
 
     /**
@@ -216,9 +192,9 @@ class UserController extends AbstractFOSRestController
     /**
      * Delete User
      * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
-     * @Rest\View(StatusCode = 201)
+     * @Rest\View(StatusCode = 204)
      * @SWG\Response(
-     *     response=201,
+     *     response=204,
      *     description="Delete User"
      * )
      * @SWG\Response(
@@ -244,6 +220,41 @@ class UserController extends AbstractFOSRestController
         $entityManager->flush();
 
         return;
+    }
+
+
+    /**
+     * Patch Phone
+     * @Rest\Patch("/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
+     * @ParamConverter("phone", converter="fos_rest.request_body")
+     * @Rest\View(StatusCode = 200)
+     * @SWG\Response(
+     *     response=200,
+     *     description="Patch User"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
+     * @param Request $request
+     * @param User $user
+     * @param AccessTokenRepository $token
+     * @return User
+     */
+    public function patchPhoneAction(Request $request, User $user, AccessTokenRepository $token)
+    {
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
     }
 
     /**

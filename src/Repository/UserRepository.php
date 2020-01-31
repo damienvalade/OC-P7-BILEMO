@@ -83,19 +83,4 @@ class UserRepository extends AbstractRepository implements PasswordUpgraderInter
         }
         return $this->paginate($qb, $limit, $offset);
     }
-
-    /**
-     * @param int $user
-     * @return int
-     */
-    public function getContractedUserInfo(int $user)
-    {
-        return $this->createQueryBuilder('u')
-            ->select('u.username, u.usernameCanonical, u.email, u.enabled, u.roles, u.lastLogin')
-            ->where('u.id = :id')
-            ->setParameter('id', $user)
-            ->getQuery()
-            ->getResult()
-            ;
-    }
 }
