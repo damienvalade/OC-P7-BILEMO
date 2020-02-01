@@ -1,4 +1,4 @@
-# Blog OpenClassrooms #
+# BileMo #
   
 ![alt text](https://portfolio.damienvalade.fr/img/projects/Bilemo.jpg)
   
@@ -36,17 +36,24 @@ Seuls les clients référencés peuvent accéder aux API. Les clients de l’API
   
  1. Clonez le repo :
 
-``` git clone https://github.com/damienvalade/OC-P7-BILEMO.git ```
+``` 
+git clone https://github.com/damienvalade/OC-P7-BILEMO.git 
+```
 
  2. Modifier le .env avec vos informations.
    
  3. Installez les dependances :
 
-``` composer install npm install ```
+``` 
+composer install npm install 
+```
 
  4. Mettre en place la BDD :
 
-``` php bin/console doctrine:database:create php bin/console doctrine:migrations:migrate ```
+``` 
+php bin/console doctrine:database:create 
+php bin/console doctrine:migrations:migrate 
+```
 
 ## Documentation ##
   

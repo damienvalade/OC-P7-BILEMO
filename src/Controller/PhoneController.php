@@ -40,7 +40,7 @@ class PhoneController extends AbstractFOSRestController
     /**
      * List phones
      * @Rest\Get("/list/phone", name="list_phones")
-     * * @Rest\QueryParam(
+     * @Rest\QueryParam(
      *     name="keyword",
      *     requirements="[a-zA-Z0-9]",
      *     nullable=true,
@@ -139,9 +139,9 @@ class PhoneController extends AbstractFOSRestController
     /**
      * Delete Phone
      * @Rest\Delete("/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
-     * @Rest\View(StatusCode = 201)
+     * @Rest\View(StatusCode = 204)
      * @SWG\Response(
-     *     response=201,
+     *     response=204,
      *     description="Delete Phone"
      * )
      * @SWG\Response(
@@ -160,5 +160,32 @@ class PhoneController extends AbstractFOSRestController
         $entityManager->flush();
 
         return;
+    }
+
+    /**
+ * Patch Phone
+ * @Rest\Patch("/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
+ * @ParamConverter("phone", converter="fos_rest.request_body")
+ * @Rest\View(StatusCode = 200)
+ * @SWG\Response(
+ *     response=200,
+ *     description="Delete Phone"
+ * )
+ * @SWG\Response(
+ *     response=403,
+ *     description="You are not allowed for this request"
+ * )
+ * @SWG\Tag(name="Admin/Phone")
+ * @Security(name="Bearer")
+ * @param Phone $phone
+ * @return Phone
+ */
+    public function patchPhoneAction(Phone $phone)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($phone);
+        $entityManager->flush();
+
+        return $phone;
     }
 }
