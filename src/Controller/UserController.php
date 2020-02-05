@@ -194,6 +194,12 @@ class UserController extends AbstractFOSRestController
 
         $entityManager = $this->getDoctrine()->getManager();
 
+        foreach ($user->getRoles() as $value){
+            if($value == "ROLE_SUPER_ADMIN"){
+                $this->errors->errorAllowed(true);
+            }
+        }
+
         $user->setClient($client->getClient());
         $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
 
@@ -270,6 +276,74 @@ class UserController extends AbstractFOSRestController
 
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->remove($user);
+        $entityManager->flush();
+
+        return;
+    }
+
+    /**
+     * Delete User
+     * @Rest\Post("/admin/promote/user/{id}", name="promote_user", requirements={"id"="\d+"})
+     * @Rest\View(StatusCode = 200)
+     * @SWG\Response(
+     *     response=200,
+     *     description="Promote User"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return void
+     */
+    public function promoteUser(Request $request, User $user, AccessTokenRepository $token)
+    {
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $user->addRole("ROLE_ADMIN");
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return;
+    }
+
+    /**
+     * Delete User
+     * @Rest\Post("/admin/demote/user/{id}", name="demote_user", requirements={"id"="\d+"})
+     * @Rest\View(StatusCode = 200)
+     * @SWG\Response(
+     *     response=200,
+     *     description="Demote User"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
+     * @param User $user
+     * @param Request $request
+     * @param AccessTokenRepository $token
+     * @return void
+     */
+    public function demoteUser(Request $request, User $user, AccessTokenRepository $token)
+    {
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $user->removeRole("ROLE_ADMIN");
+        $entityManager->persist($user);
         $entityManager->flush();
 
         return;
