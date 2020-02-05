@@ -160,7 +160,7 @@ class UserController extends AbstractFOSRestController
 
     /**
      * Add User
-     * @Rest\Post("/add/user", name="add_user")
+     * @Rest\Post("/admin/add/user", name="add_user")
      * @Rest\View(StatusCode = 201)
      * @ParamConverter("user", converter="fos_rest.request_body")
      * @SWG\Response(
@@ -205,7 +205,7 @@ class UserController extends AbstractFOSRestController
 
     /**
      * Patch Phone
-     * @Rest\Patch("/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
+     * @Rest\Patch("/admin/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
      * @ParamConverter("phone", converter="fos_rest.request_body")
      * @Rest\View(StatusCode = 200)
      * @SWG\Response(
@@ -244,7 +244,7 @@ class UserController extends AbstractFOSRestController
 
     /**
      * Delete User
-     * @Rest\Delete("/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
+     * @Rest\Delete("/admin/delete/user/{id}", name="delete_user", requirements={"id"="\d+"})
      * @Rest\View(StatusCode = 204)
      * @SWG\Response(
      *     response=204,

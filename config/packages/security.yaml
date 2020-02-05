@@ -41,6 +41,6 @@ security:
       anonymous: true
 
   access_control:
+    - { path: ^/api/superadmin, roles: [ ROLE_SUPER_ADMIN ] }
     - { path: ^/api/admin, roles: [ ROLE_ADMIN ] }
     - { path: ^/api, roles: [ ROLE_USER ] }
-    - { path: ^/createClient, roles: [ IS_AUTHENTICATED_FULLY ] }
