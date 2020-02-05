@@ -111,7 +111,7 @@ class PhoneController extends AbstractFOSRestController
 
     /**
      * Add Phone
-     * @Rest\Post("/add/phone", name="add_phone")
+     * @Rest\Post("/admin/add/phone", name="add_phone")
      * @ParamConverter("phone", converter="fos_rest.request_body")
      * @Rest\View()
      * @SWG\Response(
@@ -138,7 +138,7 @@ class PhoneController extends AbstractFOSRestController
 
     /**
      * Delete Phone
-     * @Rest\Delete("/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
+     * @Rest\Delete("/admin/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
      * @Rest\View(StatusCode = 204)
      * @SWG\Response(
      *     response=204,
@@ -164,7 +164,7 @@ class PhoneController extends AbstractFOSRestController
 
     /**
  * Patch Phone
- * @Rest\Patch("/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
+ * @Rest\Patch("/admin/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
  * @ParamConverter("phone", converter="fos_rest.request_body")
  * @Rest\View(StatusCode = 200)
  * @SWG\Response(
