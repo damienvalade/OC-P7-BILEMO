@@ -23,7 +23,7 @@ class ExceptionListener
         $code = $this->getCodeError($exception);
 
         $message = sprintf(
-            "My Error says: \"%s\" with code: %s",
+            "Error message : \"%s\" code: %s",
             $exception->getMessage(),
             $code
         );

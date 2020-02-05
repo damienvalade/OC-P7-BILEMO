@@ -24,7 +24,7 @@ class SecurityController extends AbstractFOSRestController
 
     /**
      * Create Client.
-     * @FOSRest\Post("/add/client", name="create_client")
+     * @FOSRest\Post("/superadmin/add/client", name="create_client")
      * @SWG\Response(
      *     response=201,
      *     description="Add new client",
@@ -39,7 +39,7 @@ class SecurityController extends AbstractFOSRestController
      *          )
      *     )
      * )
-     * @SWG\Tag(name="Admin/Client")
+     * @SWG\Tag(name="SuperAdmin/Client")
      * @Security(name="Bearer")
      * @param Request $request
      * @return Response
