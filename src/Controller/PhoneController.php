@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Phone;
+use App\Errors\Errors;
 use App\Repository\PhoneRepository;
 use App\Representation\Phones;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,6 +20,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use Symfony\Component\Validator\ConstraintViolationList;
 
 
 class PhoneController extends AbstractFOSRestController
@@ -27,13 +29,19 @@ class PhoneController extends AbstractFOSRestController
      * @var PhoneRepository
      */
     private $repository;
+    /**
+     * @var Errors
+     */
+    public $errors;
 
     /**
      * PhoneController constructor.
      * @param PhoneRepository $repository
+     * @param Errors $errors
      */
-    public function __construct(PhoneRepository $repository)
+    public function __construct(PhoneRepository $repository, Errors $errors)
     {
+        $this->errors = $errors;
         $this->repository = $repository;
     }
 
@@ -111,7 +119,7 @@ class PhoneController extends AbstractFOSRestController
 
     /**
      * Add Phone
-     * @Rest\Post("/admin/add/phone", name="add_phone")
+     * @Rest\Post("/superadmin/add/phone", name="add_phone")
      * @ParamConverter("phone", converter="fos_rest.request_body")
      * @Rest\View()
      * @SWG\Response(
@@ -122,13 +130,50 @@ class PhoneController extends AbstractFOSRestController
      *     response=403,
      *     description="You are not allowed for this request"
      * )
-     * @SWG\Tag(name="Admin/Phone")
+     * @SWG\Tag(name="SuperAdmin/Phone")
      * @Security(name="Bearer")
      * @param Phone $phone
+     * @param ConstraintViolationList $violations
      * @return Phone
      */
-    public function addPhoneAction(Phone $phone)
+    public function addPhoneAction(Phone $phone, ConstraintViolationList $violations)
     {
+        if (count($violations)) {
+            $this->errors->errorsConstraint($violations);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($phone);
+        $entityManager->flush();
+
+        return $phone;
+    }
+
+    /**
+     * Patch Phone
+     * @Rest\Patch("/superadmin/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
+     * @ParamConverter("phone", converter="fos_rest.request_body")
+     * @Rest\View(StatusCode = 200)
+     * @SWG\Response(
+     *     response=200,
+     *     description="Delete Phone"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="SuperAdmin/Phone")
+     * @Security(name="Bearer")
+     * @param Phone $phone
+     * @param ConstraintViolationList $violations
+     * @return Phone
+     */
+    public function patchPhoneAction(Phone $phone, ConstraintViolationList $violations)
+    {
+        if (count($violations)) {
+            $this->errors->errorsConstraint($violations);
+        }
+
         $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($phone);
         $entityManager->flush();
@@ -138,7 +183,7 @@ class PhoneController extends AbstractFOSRestController
 
     /**
      * Delete Phone
-     * @Rest\Delete("/admin/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
+     * @Rest\Delete("/superadmin/delete/phone/{id}", name="delete_phone", requirements={"id"="\d+"})
      * @Rest\View(StatusCode = 204)
      * @SWG\Response(
      *     response=204,
@@ -148,7 +193,7 @@ class PhoneController extends AbstractFOSRestController
      *     response=403,
      *     description="You are not allowed for this request"
      * )
-     * @SWG\Tag(name="Admin/Phone")
+     * @SWG\Tag(name="SuperAdmin/Phone")
      * @Security(name="Bearer")
      * @param Phone $phone
      * @return void
@@ -160,32 +205,5 @@ class PhoneController extends AbstractFOSRestController
         $entityManager->flush();
 
         return;
-    }
-
-    /**
- * Patch Phone
- * @Rest\Patch("/admin/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
- * @ParamConverter("phone", converter="fos_rest.request_body")
- * @Rest\View(StatusCode = 200)
- * @SWG\Response(
- *     response=200,
- *     description="Delete Phone"
- * )
- * @SWG\Response(
- *     response=403,
- *     description="You are not allowed for this request"
- * )
- * @SWG\Tag(name="Admin/Phone")
- * @Security(name="Bearer")
- * @param Phone $phone
- * @return Phone
- */
-    public function patchPhoneAction(Phone $phone)
-    {
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($phone);
-        $entityManager->flush();
-
-        return $phone;
     }
 }

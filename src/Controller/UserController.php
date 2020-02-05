@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\AccessToken;
 use App\Entity\Client;
 use App\Entity\User;
+use App\Errors\Errors;
 use App\Repository\AccessTokenRepository;
 use App\Repository\ClientRepository;
 use App\Repository\UserRepository;
@@ -25,6 +26,7 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use Symfony\Component\Validator\ConstraintViolationList;
 
 
 class UserController extends AbstractFOSRestController
@@ -37,19 +39,26 @@ class UserController extends AbstractFOSRestController
      * @var UserPasswordEncoderInterface
      */
     private $encoder;
+    /**
+     * @var Errors
+     */
+    private $errors;
 
     /**
      * UserController constructor.
      * @param UserRepository $repository
      * @param UserPasswordEncoderInterface $encoder
+     * @param Errors $errors
      */
     public function __construct(
         UserRepository $repository,
-        UserPasswordEncoderInterface $encoder
+        UserPasswordEncoderInterface $encoder,
+        Errors $errors
     )
     {
         $this->repository = $repository;
         $this->encoder = $encoder;
+        $this->errors = $errors;
     }
 
     /**
@@ -165,24 +174,68 @@ class UserController extends AbstractFOSRestController
      * )
      * @SWG\Tag(name="Admin/User")
      * @Security(name="Bearer")
-     * @param User $user
      * @param Request $request
+     * @param User $user
      * @param AccessTokenRepository $token
+     * @param ConstraintViolationList $violations
      * @return User
      */
-    public function addUser(Request $request, User $user, AccessTokenRepository $token)
+    public function addUser(Request $request, User $user, AccessTokenRepository $token, ConstraintViolationList $violations)
     {
 
         $client = $this->isAllowed($request, [
             'token' => $token,
-            'user' => $user
+            'user' => false
         ]);
+
+        if (count($violations)) {
+            $this->errors->errorsConstraint($violations);
+        }
 
         $entityManager = $this->getDoctrine()->getManager();
 
         $user->setClient($client->getClient());
         $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
 
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
+    }
+
+    /**
+     * Patch Phone
+     * @Rest\Patch("/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
+     * @ParamConverter("phone", converter="fos_rest.request_body")
+     * @Rest\View(StatusCode = 200)
+     * @SWG\Response(
+     *     response=200,
+     *     description="Patch User"
+     * )
+     * @SWG\Response(
+     *     response=403,
+     *     description="You are not allowed for this request"
+     * )
+     * @SWG\Tag(name="Admin/User")
+     * @Security(name="Bearer")
+     * @param Request $request
+     * @param User $user
+     * @param AccessTokenRepository $token
+     * @param ConstraintViolationList $violations
+     * @return User
+     */
+    public function patchPhoneAction(Request $request, User $user, AccessTokenRepository $token, ConstraintViolationList $violations)
+    {
+        $this->isAllowed($request, [
+            'token' => $token,
+            'user' => $user
+        ]);
+
+        if (count($violations)) {
+            $this->errors->errorsConstraint($violations);
+        }
+
+        $entityManager = $this->getDoctrine()->getManager();
         $entityManager->persist($user);
         $entityManager->flush();
 
@@ -222,41 +275,6 @@ class UserController extends AbstractFOSRestController
         return;
     }
 
-
-    /**
-     * Patch Phone
-     * @Rest\Patch("/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
-     * @ParamConverter("phone", converter="fos_rest.request_body")
-     * @Rest\View(StatusCode = 200)
-     * @SWG\Response(
-     *     response=200,
-     *     description="Patch User"
-     * )
-     * @SWG\Response(
-     *     response=403,
-     *     description="You are not allowed for this request"
-     * )
-     * @SWG\Tag(name="Admin/User")
-     * @Security(name="Bearer")
-     * @param Request $request
-     * @param User $user
-     * @param AccessTokenRepository $token
-     * @return User
-     */
-    public function patchPhoneAction(Request $request, User $user, AccessTokenRepository $token)
-    {
-        $this->isAllowed($request, [
-            'token' => $token,
-            'user' => $user
-        ]);
-
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($user);
-        $entityManager->flush();
-
-        return $user;
-    }
-
     /**
      * @param Request $request
      * @param AccessTokenRepository $client
@@ -292,34 +310,9 @@ class UserController extends AbstractFOSRestController
         $isMatch = $this->userIsMatch($client, $data['user']);
 
         if ($client === null || $isMatch === false) {
-            $this->errorAllowed(true);
+            $this->errors->errorAllowed(true);
         }
 
         return $client;
-    }
-
-    /**
-     * @param Request $request
-     * @param array $data
-     * @return bool
-     */
-    public function isAdmin(Request $request, array $data)
-    {
-        $client = $this->getClientAction($request, $data['token']);
-
-        if ($client->getUser()->getRoles() !== "ROLE_ADMIN") {
-            $this->errorAllowed(true);
-        }
-        return true;
-    }
-
-    /**
-     * @param bool $error
-     */
-    public function errorAllowed(bool $error = false)
-    {
-        if ($error === true) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
-        }
     }
 }
