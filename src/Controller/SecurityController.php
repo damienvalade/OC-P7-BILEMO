@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use FOS\OAuthServerBundle\Model\ClientInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use FOS\UserBundle\Model\UserManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use FOS\RestBundle\View\View;
 use FOS\RestBundle\Controller\Annotations as FOSRest;
@@ -12,14 +14,17 @@ use FOS\OAuthServerBundle\Model\ClientManagerInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class SecurityController extends AbstractFOSRestController
 {
     private $client_manager;
+    public $encoder;
 
-    public function __construct(ClientManagerInterface $client_manager)
+    public function __construct(ClientManagerInterface $client_manager,UserPasswordEncoderInterface $encoder)
     {
         $this->client_manager = $client_manager;
+        $this->encoder = $encoder;
     }
 
     /**
@@ -48,10 +53,12 @@ class SecurityController extends AbstractFOSRestController
     {
         $data = $this->isDataEmpty($request);
         $client = $this->clientSet($data);
+        $user = $this->userSet($client);
 
         $rows = [
-            'client_id' => $client->getPublicId(), 'client_secret' => $client->getSecret()
+            'client_id' => $client->getPublicId(), 'client_secret' => $client->getSecret(),'user_default' => $user
         ];
+
 
         return $this->handleView($this->view($rows));
     }
@@ -81,8 +88,32 @@ class SecurityController extends AbstractFOSRestController
         $client = $clientManager->createClient();
         $client->setRedirectUris([$data['redirect-uri']]);
         $client->setAllowedGrantTypes([$data['grant-type']]);
+        $client->setName($data['name']);
         $clientManager->updateClient($client);
 
         return $client;
+    }
+
+    /**
+     * @return User
+     */
+    public function userSet($client)
+    {
+        $entityManager = $this->getDoctrine()->getManager();
+
+        $user = New User();
+        $user->setUsername($client->getName());
+        $user->setUsernameCanonical($client->getName());
+        $user->setEmail('admin@admin.fr');
+        $user->setEmailCanonical('admin@admin.fr');
+        $user->setEnabled(1);
+        $user->setPassword($this->encoder->encodePassword($user, "admin"));
+        $user->setRoles(["ROLE_ADMIN"]);
+        $user->setClient($client);
+
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $user;
     }
 }

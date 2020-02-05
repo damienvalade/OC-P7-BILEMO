@@ -7,12 +7,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace App\Entity;
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use FOS\OAuthServerBundle\Model\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
+
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ClientRepository")
  * @Serializer\ExclusionPolicy("all")
@@ -55,11 +58,13 @@ class Client extends BaseClient
      * @ORM\OneToMany(targetEntity="App\Entity\User", mappedBy="client", orphanRemoval=true)
      */
     private $users;
+
     public function __construct()
     {
         parent::__construct();
         $this->users = new ArrayCollection();
     }
+
     /**
      * @return Collection|User[]
      */
@@ -67,6 +72,7 @@ class Client extends BaseClient
     {
         return $this->users;
     }
+
     public function addUser(User $user): self
     {
         if (!$this->users->contains($user)) {
@@ -75,6 +81,7 @@ class Client extends BaseClient
         }
         return $this;
     }
+
     public function removeUser(User $user): self
     {
         if ($this->users->contains($user)) {
@@ -84,6 +91,18 @@ class Client extends BaseClient
                 $user->setClient(null);
             }
         }
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
         return $this;
     }
 }
