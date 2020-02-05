@@ -292,10 +292,34 @@ class UserController extends AbstractFOSRestController
         $isMatch = $this->userIsMatch($client, $data['user']);
 
         if ($client === null || $isMatch === false) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
+            $this->errorAllowed(true);
         }
 
         return $client;
     }
 
+    /**
+     * @param Request $request
+     * @param array $data
+     * @return bool
+     */
+    public function isAdmin(Request $request, array $data)
+    {
+        $client = $this->getClientAction($request, $data['token']);
+
+        if ($client->getUser()->getRoles() !== "ROLE_ADMIN") {
+            $this->errorAllowed(true);
+        }
+        return true;
+    }
+
+    /**
+     * @param bool $error
+     */
+    public function errorAllowed(bool $error = false)
+    {
+        if ($error === true) {
+            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
+        }
+    }
 }
