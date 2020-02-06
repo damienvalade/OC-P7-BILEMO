@@ -194,8 +194,8 @@ class UserController extends AbstractFOSRestController
 
         $entityManager = $this->getDoctrine()->getManager();
 
-        foreach ($user->getRoles() as $value){
-            if($value == "ROLE_SUPER_ADMIN"){
+        foreach ($user->getRoles() as $value) {
+            if ($value == "ROLE_SUPER_ADMIN") {
                 $this->errors->errorAllowed(true);
             }
         }

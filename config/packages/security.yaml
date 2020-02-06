@@ -13,7 +13,7 @@ security:
 
   firewalls:
     oauth_token:
-      pattern:    ^/oauth/v2/token
+      pattern:    ^/login
       security:   false
     oauth_authorize:
       pattern:    ^/oauth/v2/auth
@@ -44,3 +44,4 @@ security:
     - { path: ^/api/superadmin, roles: [ ROLE_SUPER_ADMIN ] }
     - { path: ^/api/admin, roles: [ ROLE_ADMIN ] }
     - { path: ^/api, roles: [ ROLE_USER ] }
+    - { path: ^/login, roles: [ IS_AUTHENTICATED_ANONYMOUSLY ] }
