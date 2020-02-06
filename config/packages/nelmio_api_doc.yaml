@@ -5,7 +5,7 @@ nelmio_api_doc:
         info:
             title: API BileMo
             description: Api for of Bilemo inc clients. List/detail of phones and users. Can manage Users to. Implements the client manager for administrators.
-            version: 1.0.0
+            version: 1.0.1
         securityDefinitions:
             Bearer:
                 type: apiKey
@@ -16,5 +16,6 @@ nelmio_api_doc:
             - Bearer: []
     areas: # to filter documented areas
         path_patterns:
-            - ^/api(?!/doc) # Accepts routes under /api except /api/doc, /api/admin
+            - ^/api(?!/doc)
+            - ^/login
 
