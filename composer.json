@@ -1,6 +1,6 @@
 {
   "name": "damienvalade/oc-p7-bilemo",
-  "version": "0.7.11",
+  "version": "1.0.0",
   "type": "library",
   "description": "API for BileMO",
   "authors": [
@@ -53,8 +53,7 @@
     "symfony/yaml": "4.4.*",
     "twig/twig": "2.*",
     "white-october/pagerfanta-bundle": "^1.2",
-    "willdurand/hateoas-bundle": "2.0.1",
-    "ext-http": "*"
+    "willdurand/hateoas-bundle": "2.0.1"
   },
   "require-dev": {
     "symfony/debug-pack": "*",
