@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Client;
 use App\Entity\User;
+use App\Errors\Errors;
 use FOS\OAuthServerBundle\Model\ClientInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\UserBundle\Model\UserManagerInterface;
@@ -14,22 +16,29 @@ use FOS\OAuthServerBundle\Model\ClientManagerInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Validator\ConstraintViolationList;
+use JMS\Serializer\SerializerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 class SecurityController extends AbstractFOSRestController
 {
     private $client_manager;
     public $encoder;
+    public $errors;
 
-    public function __construct(ClientManagerInterface $client_manager,UserPasswordEncoderInterface $encoder)
+    public function __construct(ClientManagerInterface $client_manager,UserPasswordEncoderInterface $encoder, Errors $errors)
     {
         $this->client_manager = $client_manager;
         $this->encoder = $encoder;
+        $this->errors = $errors;
     }
 
     /**
      * Create Client.
      * @FOSRest\Post("/superadmin/add/client", name="create_client")
+     * @ParamConverter("client", converter="fos_rest.request_body")
      * @SWG\Response(
      *     response=201,
      *     description="Add new client",
@@ -47,13 +56,19 @@ class SecurityController extends AbstractFOSRestController
      * @SWG\Tag(name="SuperAdmin/Client")
      * @Security(name="Bearer")
      * @param Request $request
+     * @param Client $client
+     * @param ConstraintViolationList $violations
      * @return Response
      */
-    public function AuthenticationAction(Request $request)
+    public function AuthenticationAction(Request $request,  ConstraintViolationList $violations, Client $client)
     {
         $data = $this->isDataEmpty($request);
         $client = $this->clientSet($data);
         $user = $this->userSet($client);
+
+        if (count($violations)) {
+            $this->errors->errorsConstraint($violations);
+        }
 
         $rows = [
             'client_id' => $client->getPublicId(), 'client_secret' => $client->getSecret(),'user_default' => $user

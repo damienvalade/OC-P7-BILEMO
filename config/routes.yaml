@@ -1,7 +1,3 @@
-fos_oauth_server_token:
-  path:       /login
-  controller: fos_oauth_server.controller.token:tokenAction
-
 fos_oauth_server_authorize:
   resource: "@FOSOAuthServerBundle/Resources/config/routing/authorize.xml"
 
