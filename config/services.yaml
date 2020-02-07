@@ -33,3 +33,8 @@ services:
 
     FOS\OAuthServerBundle\Model\AccessTokenManagerInterface:
         alias: fos_oauth_server.access_token_manager.default
+
+    App\Controller\Login:
+        decorates: FOS\OAuthServerBundle\Controller\TokenController
+        arguments: ['@fos_oauth_server.server']
+        tags: ['controller.service_arguments']
