@@ -86,7 +86,7 @@ class SecurityController extends AbstractFOSRestController
     {
         $data = $this->isDataEmpty($request);
         $client = $this->clientSet($data);
-        $user = $this->userSet($client);
+        $user = $this->userSet($client, "ROLE_ADMIN");
 
         $rows = [
             'client_id' => $client->getPublicId(), 'client_secret' => $client->getSecret(),'user_default' => $user
@@ -129,9 +129,10 @@ class SecurityController extends AbstractFOSRestController
 
     /**
      * @param $client
+     * @param string $role
      * @return User
      */
-    public function userSet($client)
+    public function userSet($client,string $role)
     {
         $entityManager = $this->getDoctrine()->getManager();
 
@@ -142,7 +143,7 @@ class SecurityController extends AbstractFOSRestController
         $user->setEmailCanonical('admin@admin.fr');
         $user->setEnabled(1);
         $user->setPassword($this->encoder->encodePassword($user, "admin"));
-        $user->setRoles(["ROLE_ADMIN"]);
+        $user->setRoles([$role]);
         $user->setClient($client);
 
         $entityManager->persist($user);

@@ -21,6 +21,9 @@ class Users
         $this->addMeta('current_items', count($data->getCurrentPageResults()));
         $this->addMeta('total_items', $data->getNbResults());
         $this->addMeta('offset', $data->getCurrentPageOffsetStart());
+        $this->addMeta('next offset page', $data->getCurrentPageOffsetEnd() +1);
+        $this->addMeta('actual page', $data->getCurrentPage());
+        $this->addMeta('last page', $data->getNbPages());
         return $this;
     }
 

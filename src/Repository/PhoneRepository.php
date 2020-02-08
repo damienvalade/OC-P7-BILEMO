@@ -37,8 +37,8 @@ class PhoneRepository extends AbstractRepository
         ;
         if($term){
             $qb
-                ->where('a.name LIKE? 1')
-                ->setParameter(1, '%' . $term . '%')
+                ->where('a.name = ?1')
+                ->setParameter(1, $term )
             ;
         }
         $paginate = $this->paginate($qb, $limit, $offset);

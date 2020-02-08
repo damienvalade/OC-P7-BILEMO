@@ -65,8 +65,6 @@ class UserController extends AbstractFOSRestController
      * @Rest\Get("/list/user", name="list_user")
      * @Rest\QueryParam(
      *     name="keyword",
-     *     requirements="[a-zA-Z0-9]",
-     *     default="{id}",
      *     nullable=true,
      *     description="The keyword to search for."
      * )
@@ -114,6 +112,7 @@ class UserController extends AbstractFOSRestController
 
         $pager = $this->repository->search(
             $client,
+            $paramFetcher->get('keyword'),
             $paramFetcher->get('order'),
             $paramFetcher->get('limit'),
             $paramFetcher->get('offset')
