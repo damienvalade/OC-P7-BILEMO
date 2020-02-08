@@ -15,24 +15,35 @@ class Errors
      */
     public function errorsConstraint(ConstraintViolationList $violations)
     {
-        $message = "Wrong data sent, please try with good type/name: ";
+        $message = "Bad field";
         foreach ($violations as $violation) {
-            $message .= sprintf(
-                "Field %s: %s",
+            $message = sprintf(
+                "Field : %s ; message : %s",
                 $violation->getPropertyPath(),
                 $violation->getMessage()
             );
         }
-        throw new HttpException(Response::HTTP_BAD_REQUEST, $message);
+        $this->errorCustom(Response::HTTP_BAD_REQUEST, $message);
+    }
+
+    public function errorAllowed()
+    {
+
+        $this->errorCustom(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
+    }
+
+    public function errorBadRequest()
+    {
+        $this->errorCustom(Response::HTTP_BAD_REQUEST, 'Wrong data sent, please try with good type/name');
+
     }
 
     /**
-     * @param bool $error
+     * @param int $response
+     * @param string $message
      */
-    public function errorAllowed(bool $error = false)
+    public function errorCustom(int $response, string $message)
     {
-        if ($error === true) {
-            throw new HttpException(Response::HTTP_FORBIDDEN, 'You are not allowed for this request');
-        }
+        throw new HttpException($response, $message);
     }
 }

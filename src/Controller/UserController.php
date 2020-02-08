@@ -26,7 +26,6 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
-use Symfony\Component\Validator\ConstraintViolationList;
 
 
 class UserController extends AbstractFOSRestController
@@ -163,6 +162,36 @@ class UserController extends AbstractFOSRestController
      * @Rest\Post("/admin/add/user", name="add_user")
      * @Rest\View(StatusCode = 201)
      * @ParamConverter("user", converter="fos_rest.request_body")
+     * @SWG\Parameter(
+     *     name="username",
+     *     in="body",
+     *     type="string",
+     *     description="Username of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="username", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="email",
+     *     in="body",
+     *     type="string",
+     *     description="Email of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="email", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="password",
+     *     in="body",
+     *     type="string",
+     *     description="Password of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="password", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=201,
      *     description="Add new User",
@@ -177,10 +206,9 @@ class UserController extends AbstractFOSRestController
      * @param Request $request
      * @param User $user
      * @param AccessTokenRepository $token
-     * @param ConstraintViolationList $violations
      * @return User
      */
-    public function addUser(Request $request, User $user, AccessTokenRepository $token, ConstraintViolationList $violations)
+    public function addUser(Request $request, User $user, AccessTokenRepository $token)
     {
 
         $client = $this->isAllowed($request, [
@@ -188,20 +216,18 @@ class UserController extends AbstractFOSRestController
             'user' => false
         ]);
 
-        if (count($violations)) {
-            $this->errors->errorsConstraint($violations);
-        }
+        $this->validitySearch(json_decode($request->getContent(), true));
 
         $entityManager = $this->getDoctrine()->getManager();
 
         foreach ($user->getRoles() as $value) {
             if ($value == "ROLE_SUPER_ADMIN") {
-                $this->errors->errorAllowed(true);
+                $this->errors->errorAllowed();
             }
         }
 
         $user->setClient($client->getClient());
-        $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+        $this->commonSet($user);
 
         $entityManager->persist($user);
         $entityManager->flush();
@@ -212,8 +238,38 @@ class UserController extends AbstractFOSRestController
     /**
      * Patch Phone
      * @Rest\Patch("/admin/patch/user/{id}", name="patch_user", requirements={"id"="\d+"})
-     * @ParamConverter("phone", converter="fos_rest.request_body")
+     * @ParamConverter("user", converter="fos_rest.request_body")
      * @Rest\View(StatusCode = 200)
+     * @SWG\Parameter(
+     *     name="username",
+     *     in="body",
+     *     type="string",
+     *     description="Username of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="username", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="email",
+     *     in="body",
+     *     type="string",
+     *     description="Email of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="email", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="password",
+     *     in="body",
+     *     type="string",
+     *     description="Password of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="password", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=200,
      *     description="Patch User"
@@ -227,25 +283,33 @@ class UserController extends AbstractFOSRestController
      * @param Request $request
      * @param User $user
      * @param AccessTokenRepository $token
-     * @param ConstraintViolationList $violations
      * @return User
      */
-    public function patchPhoneAction(Request $request, User $user, AccessTokenRepository $token, ConstraintViolationList $violations)
+    public function patchUserAction(Request $request, User $user, AccessTokenRepository $token)
     {
+        $result = $this->repository->findOneBy(['id' => $request->get('id')]);
+
         $this->isAllowed($request, [
             'token' => $token,
-            'user' => $user
+            'user' => false
         ]);
 
-        if (count($violations)) {
-            $this->errors->errorsConstraint($violations);
+        $this->validitySearch(json_decode($request->getContent(), true));
+
+        foreach ($user->getRoles() as $value) {
+            if ($value == "ROLE_SUPER_ADMIN") {
+                $this->errors->errorAllowed();
+            }
         }
 
+        $this->commonSet($user);
+        $this->dataSet($result, $user);
+
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($user);
+        $entityManager->persist($result);
         $entityManager->flush();
 
-        return $user;
+        return $result;
     }
 
     /**
@@ -384,9 +448,55 @@ class UserController extends AbstractFOSRestController
         $isMatch = $this->userIsMatch($client, $data['user']);
 
         if ($client === null || $isMatch === false) {
-            $this->errors->errorAllowed(true);
+            $this->errors->errorAllowed();
         }
 
         return $client;
+    }
+
+    public function validitySearch($data)
+    {
+
+        $param = [
+            "username",
+            "email",
+            "password"
+        ];
+
+        foreach ($param as $name) {
+            if (empty($data[$name]) || !$data[$name]) {
+                throw new HttpException(Response::HTTP_BAD_REQUEST, $name . ' missing');
+            }
+        }
+    }
+
+    /**
+     * @param User $user
+     * @return User
+     */
+    public function commonSet(User $user)
+    {
+        $user->setUsernameCanonical($user->getUsername());
+        $user->setEmailCanonical($user->getEmail());
+        $user->setEnabled(1);
+        $user->setSalt('');
+        $user->setPassword($this->encoder->encodePassword($user, $user->getPassword()));
+
+        return $user;
+    }
+
+    public function dataSet(User $result, User $user)
+    {
+        $result->setUsername($user->getUsername());
+        $result->setUsernameCanonical($user->getUsernameCanonical());
+        $result->setEmail($user->getEmail());
+        $result->setEmailCanonical($user->getEmailCanonical());
+        $result->setEnabled($user->isEnabled());
+        $result->setSalt($user->getSalt());
+        $result->setPassword($user->getPassword());
+        $result->setLastLogin($user->getLastLogin());
+        $result->setConfirmationToken($user->getConfirmationToken());
+        $result->setPasswordRequestedAt($user->getPasswordRequestedAt());
+        $result->setRoles($user->getRoles());
     }
 }
