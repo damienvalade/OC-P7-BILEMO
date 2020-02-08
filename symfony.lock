@@ -1,4 +1,7 @@
 {
+    "clue/stream-filter": {
+        "version": "v1.4.1"
+    },
     "csa/guzzle-bundle": {
         "version": "3.0",
         "recipe": {
@@ -129,6 +132,12 @@
     "exsyst/swagger": {
         "version": "v0.4.1"
     },
+    "friendsofsymfony/http-cache": {
+        "version": "2.9.0"
+    },
+    "friendsofsymfony/http-cache-bundle": {
+        "version": "2.8.0"
+    },
     "friendsofsymfony/oauth-server-bundle": {
         "version": "1.6.2"
     },
@@ -252,6 +261,24 @@
     "php": {
         "version": "7.3"
     },
+    "php-http/client-common": {
+        "version": "2.1.0"
+    },
+    "php-http/discovery": {
+        "version": "1.7.4"
+    },
+    "php-http/httplug": {
+        "version": "2.1.0"
+    },
+    "php-http/message": {
+        "version": "1.8.0"
+    },
+    "php-http/message-factory": {
+        "version": "v1.0.2"
+    },
+    "php-http/promise": {
+        "version": "v1.0.0"
+    },
     "phpdocumentor/reflection-common": {
         "version": "2.0.0"
     },
@@ -265,6 +292,9 @@
         "version": "1.0.1"
     },
     "psr/container": {
+        "version": "1.0.0"
+    },
+    "psr/http-client": {
         "version": "1.0.0"
     },
     "psr/http-message": {

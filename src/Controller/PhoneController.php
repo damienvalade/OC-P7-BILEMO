@@ -50,6 +50,7 @@ class PhoneController extends AbstractFOSRestController
      * @Rest\Get("/list/phone", name="list_phones")
      * @Rest\QueryParam(
      *     name="keyword",
+     *     default="",
      *     nullable=true,
      *     description="The keyword to search for."
      * )

@@ -66,6 +66,7 @@ class UserController extends AbstractFOSRestController
      * @Rest\QueryParam(
      *     name="keyword",
      *     nullable=true,
+     *     default="",
      *     description="The keyword to search for."
      * )
      * @Rest\QueryParam(
