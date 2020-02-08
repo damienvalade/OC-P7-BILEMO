@@ -55,6 +55,34 @@ php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate 
 ```
 
-## Documentation ##
+ 5. Mettre en place les fixtures pour utiliser l'api :
+
+``` 
+php bin/console doctrine:fixtures:load
+```
+
+ 6. Creer un token :
+
+``` 
+requete : https://adresse.com/api/login
+Body : {
+         "client_id": "l'id client à retrouver dans la db",
+         "client_secret": "client_secret à retrouver dans la db",
+         "grant_type": "password",
+         "username": "celui dans la classe AppFixture; username default: default",
+         "password": "celui dans la classe AppFixture; password default: admin"
+       }
+```
+
+ 7. Faire des requêtes grace au token :
+
+``` 
+exemple : https://adresse.com/api/list/phone
+header : 
+    header name : X-Auth-Token
+    header value : token creer
+```
+
+## Documentation des différentes requêtes ##
   
-[![Generic badge](https://img.shields.io/badge/Documentation-v0.7.5-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
+[![Generic badge](https://img.shields.io/badge/Documentation-v1.1.0-blue.svg)](https://bilemo.damienvalade.fr/api/doc)
