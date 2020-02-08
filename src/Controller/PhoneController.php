@@ -50,7 +50,6 @@ class PhoneController extends AbstractFOSRestController
      * @Rest\Get("/list/phone", name="list_phones")
      * @Rest\QueryParam(
      *     name="keyword",
-     *     requirements="[a-zA-Z0-9]",
      *     nullable=true,
      *     description="The keyword to search for."
      * )
@@ -85,6 +84,7 @@ class PhoneController extends AbstractFOSRestController
      */
     public function getListPhonesAction(ParamFetcherInterface $paramFetcher)
     {
+
         $pager = $this->repository->search(
             $paramFetcher->get('keyword'),
             $paramFetcher->get('order'),
