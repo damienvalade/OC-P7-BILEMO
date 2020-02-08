@@ -33,8 +33,7 @@ class AppFixtures extends Fixture
          */
 
         $client = $this->client_manager->createClient();
-        $client->setAllowedGrantTypes(['password']);
-        $client->setAllowedGrantTypes(['refresh_token']);
+        $client->setAllowedGrantTypes(['password,refresh_token']);
         $client->setRedirectUris(['http://localhost/api/']);
         $client->setName('default');
 

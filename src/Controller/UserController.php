@@ -218,6 +218,8 @@ class UserController extends AbstractFOSRestController
 
         $this->validitySearch(json_decode($request->getContent(), true));
 
+        $this->isUniq($user);
+
         $entityManager = $this->getDoctrine()->getManager();
 
         foreach ($user->getRoles() as $value) {
@@ -295,6 +297,8 @@ class UserController extends AbstractFOSRestController
         ]);
 
         $this->validitySearch(json_decode($request->getContent(), true));
+
+        $this->isUniq($user);
 
         foreach ($user->getRoles() as $value) {
             if ($value == "ROLE_SUPER_ADMIN") {
@@ -499,4 +503,17 @@ class UserController extends AbstractFOSRestController
         $result->setPasswordRequestedAt($user->getPasswordRequestedAt());
         $result->setRoles($user->getRoles());
     }
+
+    public function isUniq(User $user)
+    {
+        $check = $this->getDoctrine()->getRepository(User::class);
+        $email = $check->findOneBy(['email' => $user->getEmail()]);
+        $username = $check->findOneBy(['username' => $user->getUsername()]);
+
+        if(!empty($email) || !empty($username)){
+            $this->errors->errorCustom(Response::HTTP_CONFLICT, "Username ou email déja existant");
+        }
+        return true;
+    }
+
 }
