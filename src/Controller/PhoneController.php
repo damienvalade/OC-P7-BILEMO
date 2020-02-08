@@ -122,6 +122,36 @@ class PhoneController extends AbstractFOSRestController
      * @Rest\Post("/superadmin/add/phone", name="add_phone")
      * @ParamConverter("phone", converter="fos_rest.request_body")
      * @Rest\View()
+     * @SWG\Parameter(
+     *     name="name",
+     *     in="body",
+     *     type="string",
+     *     description="Name",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="name", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="price",
+     *     in="body",
+     *     type="integer",
+     *     description="Price",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="price", type="integer")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="description",
+     *     in="body",
+     *     type="string",
+     *     description="Description",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="Description", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=201,
      *     description="add Phone"
@@ -154,9 +184,39 @@ class PhoneController extends AbstractFOSRestController
      * @Rest\Patch("/superadmin/patch/phone/{id}", name="patch_phone", requirements={"id"="\d+"})
      * @ParamConverter("phone", converter="fos_rest.request_body")
      * @Rest\View(StatusCode = 200)
+     * @SWG\Parameter(
+     *     name="name",
+     *     in="body",
+     *     type="string",
+     *     description="Name",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="name", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="price",
+     *     in="body",
+     *     type="integer",
+     *     description="Price",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="price", type="integer")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="description",
+     *     in="body",
+     *     type="string",
+     *     description="Description",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="Description", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=200,
-     *     description="Delete Phone"
+     *     description="patch Phone"
      * )
      * @SWG\Response(
      *     response=403,
@@ -164,21 +224,28 @@ class PhoneController extends AbstractFOSRestController
      * )
      * @SWG\Tag(name="SuperAdmin/Phone")
      * @Security(name="Bearer")
+     * @param Request $request
      * @param Phone $phone
      * @param ConstraintViolationList $violations
      * @return Phone
      */
-    public function patchPhoneAction(Phone $phone, ConstraintViolationList $violations)
+    public function patchPhoneAction(Request $request, Phone $phone, ConstraintViolationList $violations)
     {
+        $result = $this->repository->findOneBy(['id'=>$request->get('id')]);
+
         if (count($violations)) {
             $this->errors->errorsConstraint($violations);
         }
 
+        $result->setPrice($phone->getPrice());
+        $result->setDescription($phone->getDescription());
+        $result->setName($phone->getName());
+
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($phone);
+        $entityManager->persist($result);
         $entityManager->flush();
 
-        return $phone;
+        return $result;
     }
 
     /**

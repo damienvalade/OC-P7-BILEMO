@@ -46,6 +46,56 @@ class Login extends BaseController {
      *          )
      *     )
      * )
+     * @SWG\Parameter(
+     *     name="client_id",
+     *     in="body",
+     *     type="string",
+     *     description="Id of the client",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="client_id", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="client_secret",
+     *     in="body",
+     *     type="string",
+     *     description="Secret key of the client",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="client_secret", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="grant_type",
+     *     in="body",
+     *     type="string",
+     *     description="Type",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="grant_type", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="username",
+     *     in="body",
+     *     type="string",
+     *     description="Username of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="username", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="password",
+     *     in="body",
+     *     type="string",
+     *     description="Password of the User",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="password", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=400,
      *     description="Bad Request"

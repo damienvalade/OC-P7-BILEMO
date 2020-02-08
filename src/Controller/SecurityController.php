@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Client;
 use App\Entity\User;
 use App\Errors\Errors;
 use FOS\OAuthServerBundle\Model\ClientInterface;
@@ -16,11 +15,7 @@ use FOS\OAuthServerBundle\Model\ClientManagerInterface;
 use Swagger\Annotations as SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Validator\ConstraintViolationList;
-use JMS\Serializer\SerializerInterface;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 
 class SecurityController extends AbstractFOSRestController
 {
@@ -38,7 +33,36 @@ class SecurityController extends AbstractFOSRestController
     /**
      * Create Client.
      * @FOSRest\Post("/superadmin/add/client", name="create_client")
-     * @ParamConverter("client", converter="fos_rest.request_body")
+     * @SWG\Parameter(
+     *     name="redirect-uri",
+     *     in="body",
+     *     type="string",
+     *     description="redirect-uri",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="redirect-uri", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="grant-type",
+     *     in="body",
+     *     type="string",
+     *     description="grant-type",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="grant-type", type="string")
+     *     )
+     * )
+     * @SWG\Parameter(
+     *     name="name",
+     *     in="body",
+     *     type="string",
+     *     description="name",
+     *     required=true,
+     *     @SWG\Schema(
+     *          @SWG\Property(property="name", type="string")
+     *     )
+     * )
      * @SWG\Response(
      *     response=201,
      *     description="Add new client",
@@ -56,19 +80,13 @@ class SecurityController extends AbstractFOSRestController
      * @SWG\Tag(name="SuperAdmin/Client")
      * @Security(name="Bearer")
      * @param Request $request
-     * @param Client $client
-     * @param ConstraintViolationList $violations
      * @return Response
      */
-    public function AuthenticationAction(Request $request,  ConstraintViolationList $violations, Client $client)
+    public function AuthenticationAction(Request $request)
     {
         $data = $this->isDataEmpty($request);
         $client = $this->clientSet($data);
         $user = $this->userSet($client);
-
-        if (count($violations)) {
-            $this->errors->errorsConstraint($violations);
-        }
 
         $rows = [
             'client_id' => $client->getPublicId(), 'client_secret' => $client->getSecret(),'user_default' => $user
@@ -80,14 +98,14 @@ class SecurityController extends AbstractFOSRestController
 
     /**
      * @param Request $request
-     * @return Response
+     * @return string
      */
     public function isDataEmpty(Request $request)
     {
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['redirect-uri']) || empty($data['grant-type'])) {
-            return $this->handleView($this->view($data));
+        if (empty($data['redirect-uri']) || empty($data['grant-type']) || empty($data['name'])) {
+            $this->errors->errorBadRequest();
         }
 
         return $data;
@@ -110,6 +128,7 @@ class SecurityController extends AbstractFOSRestController
     }
 
     /**
+     * @param $client
      * @return User
      */
     public function userSet($client)

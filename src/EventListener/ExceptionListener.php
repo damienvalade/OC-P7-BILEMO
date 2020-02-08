@@ -3,7 +3,9 @@
 
 namespace App\EventListener;
 
+use JMS\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -22,14 +24,13 @@ class ExceptionListener
         $exception = $event->getThrowable();
         $code = $this->getCodeError($exception);
 
-        $message = sprintf(
-            "Error message : \"%s\" code: %s",
-            $exception->getMessage(),
-            $code
-        );
+        $result['body'] = [
+            'code' => $code,
+            'message' => $exception->getMessage()
+        ];
 
-        $this->logger->error($message);
-        $response = $this->getResponse($message, $exception);
+        $response = new JsonResponse($result['body'], $code);
+
         $event->setResponse($response);
     }
 
@@ -46,30 +47,7 @@ class ExceptionListener
         } else {
             $code = $exception->getCode();
         }
-
         return $code;
     }
 
-    /**
-     * @param string $message
-     * @param \Throwable $exception
-     * @return Response
-     */
-    public function getResponse(string $message, \Throwable $exception)
-    {
-        $response = new Response();
-        $response->setContent($message);
-
-        if ($exception instanceof HttpExceptionInterface) {
-            $statusCode = $exception->getStatusCode();
-            $response->headers->replace($exception->getHeaders());
-        }
-
-        if (empty($statusCode)) {
-            $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
-        }
-
-        $response->setStatusCode($statusCode);
-        return $response;
-    }
 }
