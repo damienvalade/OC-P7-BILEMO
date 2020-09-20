@@ -6,7 +6,7 @@ use App\Controller\SecurityController;
 use App\Entity\Client;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use FOS\OAuthServerBundle\Model\ClientManagerInterface;
 
 class AppFixtures extends Fixture

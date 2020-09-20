@@ -1,6 +1,6 @@
 # BileMo #
   
-![alt text](https://portfolio.damienvalade.fr/img/projects/Bilemo.jpg)
+![alt text](https://portfolio.damienvalade.fr/img/projects/bilemo.png)
   
 Projet OpenClassrooms : API pour l'entreprise BileMo 
   
